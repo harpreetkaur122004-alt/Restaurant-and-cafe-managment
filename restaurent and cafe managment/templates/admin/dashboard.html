@@ -1,0 +1,203 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h1 class="h2 fw-bold text-dark">Management Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin_menu') }}" class="btn btn-sm btn-cafe-primary me-2">
+            <i class="bi bi-plus-circle me-1"></i> Add Food Item
+        </a>
+        <a href="{{ url_for('admin_sales') }}" class="btn btn-sm btn-outline-dark">
+            <i class="bi bi-file-earmark-bar-graph me-1"></i> View Sales Report
+        </a>
+    </div>
+</div>
+
+<!-- ================= KPI STATISTIC CARDS ================= -->
+<div class="row g-3 mb-4">
+    <!-- Total Sales -->
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div>
+                <span class="text-muted small fw-bold text-uppercase">Total Sales Revenue</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(stats.total_sales or 0) }}</h3>
+                <span class="small text-success"><i class="bi bi-arrow-up-circle-fill"></i> Verified revenue</span>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-sales">
+                <i class="bi bi-currency-rupee"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div>
+                <span class="text-muted small fw-bold text-uppercase">Total Orders Placed</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats.total_orders or 0 }}</h3>
+                <span class="small text-muted"><a href="{{ url_for('admin_orders') }}">View orders &rarr;</a></span>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-orders">
+                <i class="bi bi-bag-check-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Customers -->
+    <div class="col-xl-2 col-md-4">
+        <div class="kpi-card">
+            <div>
+                <span class="text-muted small fw-bold text-uppercase">Customers</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats.total_customers or 0 }}</h3>
+                <span class="small text-muted">Registered</span>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-customers">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Menu Items -->
+    <div class="col-xl-2 col-md-4">
+        <div class="kpi-card">
+            <div>
+                <span class="text-muted small fw-bold text-uppercase">Food Items</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats.total_items or 0 }}</h3>
+                <span class="small text-muted">In 7 categories</span>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-items">
+                <i class="bi bi-cup-hot-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Reservations -->
+    <div class="col-xl-2 col-md-4">
+        <div class="kpi-card">
+            <div>
+                <span class="text-muted small fw-bold text-uppercase">Bookings</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats.total_reservations or 0 }}</h3>
+                <span class="small text-muted">Table requests</span>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-reservations">
+                <i class="bi bi-calendar-check-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Orders (with Live Status Selector) -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-clock-history text-danger me-2"></i>Recent Orders
+                </h5>
+                <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline-dark rounded-pill">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Order Type</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_orders %}
+                            {% for ord in recent_orders %}
+                            <tr>
+                                <td>
+                                    <strong class="text-danger">{{ ord.order_number }}</strong>
+                                    <div class="small text-muted">{{ ord.created_at }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ ord.customer_name }}</div>
+                                    <div class="small text-muted">{{ ord.customer_phone }}</div>
+                                </td>
+                                <td class="fw-bold text-dark">
+                                    {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(ord.total_amount) }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border text-capitalize">{{ ord.order_type.replace('_', ' ') }}</span>
+                                </td>
+                                <td>
+                                    <!-- Inline Status Form -->
+                                    <form action="{{ url_for('update_order_status', order_id=ord.id) }}" method="POST" class="d-inline">
+                                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            <option value="Pending" {% if ord.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                            <option value="Confirmed" {% if ord.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                            <option value="Preparing" {% if ord.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                                            <option value="Ready" {% if ord.status == 'Ready' %}selected{% endif %}>Ready</option>
+                                            <option value="Completed" {% if ord.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                            <option value="Cancelled" {% if ord.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_invoice', order_id=ord.id) }}" class="btn btn-sm btn-outline-secondary" title="View Bill">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No recent orders found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Table Reservations -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-calendar2-heart text-danger me-2"></i>Upcoming Bookings
+                </h5>
+                <a href="{{ url_for('admin_reservations') }}" class="btn btn-sm btn-outline-dark rounded-pill">All</a>
+            </div>
+            <div class="p-3">
+                {% if recent_reservations %}
+                    {% for res in recent_reservations %}
+                    <div class="p-3 mb-2 bg-light rounded-3 border">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <strong class="text-dark">{{ res.customer_name }}</strong>
+                            <span class="status-pill status-{{ res.status|capitalize }}">{{ res.status|capitalize }}</span>
+                        </div>
+                        <div class="small text-muted mb-2">
+                            <div><i class="bi bi-geo-alt me-1"></i> Table {{ res.table_number }} &bull; {{ res.guest_count }} Guests</div>
+                            <div><i class="bi bi-clock me-1"></i> {{ res.reservation_date }} at {{ res.reservation_time }}</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            {% if res.status == 'pending' %}
+                            <form action="{{ url_for('update_reservation_status', res_id=res.id, status='confirmed') }}" method="POST">
+                                <button type="submit" class="btn btn-sm btn-success py-0 px-2">Confirm</button>
+                            </form>
+                            <form action="{{ url_for('update_reservation_status', res_id=res.id, status='cancelled') }}" method="POST">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Cancel</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No pending reservations.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

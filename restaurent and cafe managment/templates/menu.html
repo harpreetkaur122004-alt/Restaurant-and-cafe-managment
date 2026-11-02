@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Menu{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="text-center mb-4">
+        <span class="text-uppercase fw-bold text-danger small">Culinary Offerings</span>
+        <h1 class="display-5 fw-bold">Explore Our Artisanal Menu</h1>
+        <p class="text-muted">Freshly prepared, sustainably sourced, and served with love.</p>
+    </div>
+
+    <!-- Search & Veg Toggle Toolbar -->
+    <div class="row justify-content-center mb-4 g-3 align-items-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="menuSearchInput" class="form-control border-start-0" placeholder="Search dish, pizza, coffee, dessert...">
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="form-check form-switch bg-white p-2 px-3 border rounded-pill shadow-sm">
+                <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="vegOnlyFilter">
+                <label class="form-check-label fw-semibold text-dark cursor-pointer" for="vegOnlyFilter">
+                    <span class="food-type-icon veg me-1"></span> Pure Veg Only
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Pills Navigation -->
+    <div class="category-filter-nav justify-content-lg-center mb-4">
+        <a href="{{ url_for('menu') }}" class="cat-pill {% if not selected_category %}active{% endif %}">
+            <i class="bi bi-grid-fill me-1"></i> All Items
+        </a>
+        {% for cat in categories %}
+        <a href="{{ url_for('menu', category=cat.slug) }}" class="cat-pill {% if selected_category == cat.slug %}active{% endif %}">
+            {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Menu Items Grid -->
+    <div class="row g-4" id="menuItemsGrid">
+        {% for item in items %}
+        <div class="col-lg-3 col-md-6 menu-item-col" data-name="{{ item.name }}" data-desc="{{ item.description }}" data-veg="{{ 'true' if item.is_veg else 'false' }}">
+            <div class="food-card">
+                <div class="food-card-img-wrap">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="food-card-img" onerror="this.src='/static/images/default_food.svg'">
+                    <span class="food-card-badge">{{ item.category_name }}</span>
+                    <div class="food-card-veg-badge">
+                        <span class="food-type-icon {{ 'veg' if item.is_veg else 'non-veg' }}" title="{{ 'Vegetarian' if item.is_veg else 'Non-Vegetarian' }}"></span>
+                    </div>
+                </div>
+                <div class="food-card-body">
+                    <h5 class="food-card-title">{{ item.name }}</h5>
+                    <p class="food-card-desc">{{ item.description }}</p>
+                    <div class="food-card-footer">
+                        <span class="food-card-price">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(item.price) }}</span>
+                        {% if item.is_available %}
+                            <form action="{{ url_for('add_to_cart', item_id=item.id) }}" method="POST" class="d-inline">
+                                <input type="hidden" name="return_url" value="{{ request.full_path }}">
+                                <button type="submit" class="btn btn-cafe-primary btn-sm">
+                                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="badge bg-secondary px-2 py-1">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- No Results Placeholder -->
+    <div id="noResultsMessage" class="text-center py-5" style="display: none;">
+        <i class="bi bi-emoji-neutral fs-1 text-muted"></i>
+        <h4 class="mt-3 text-muted">No dishes match your search or filter!</h4>
+        <p class="text-muted">Try clearing the search query or unchecking Pure Veg filter.</p>
+    </div>
+</div>
+{% endblock %}
+

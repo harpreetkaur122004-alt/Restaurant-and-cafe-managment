@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#f4ebd9"/>
+  <circle cx="200" cy="150" r="90" fill="#e8dac1" stroke="#d4a373" stroke-width="4"/>
+  <circle cx="200" cy="150" r="70" fill="#fffaf2"/>
+  <path d="M 170 140 Q 200 110 230 140 Q 200 170 170 140 Z" fill="#e67e22"/>
+  <circle cx="195" cy="135" r="8" fill="#27ae60"/>
+  <circle cx="215" cy="148" r="6" fill="#c0392b"/>
+  <text x="200" y="270" font-family="'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#6f4e37" text-anchor="middle">Artisanal Gourmet Selection</text>
+</svg>
+

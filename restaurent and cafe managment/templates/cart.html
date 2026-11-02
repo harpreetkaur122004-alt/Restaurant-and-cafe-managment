@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <span class="text-uppercase fw-bold text-danger small">Your Selections</span>
+            <h1 class="display-6 fw-bold mb-0">Your Food Basket</h1>
+        </div>
+        {% if cart_items %}
+        <form action="{{ url_for('clear_cart') }}" method="POST" onsubmit="return confirm('Clear all items from your cart?');">
+            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <i class="bi bi-trash3 me-1"></i> Clear Cart
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if not cart_items %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border p-5">
+        <div class="rounded-circle bg-light d-inline-flex p-4 mb-3">
+            <i class="bi bi-bag-x text-muted" style="font-size: 3.5rem;"></i>
+        </div>
+        <h3 class="fw-bold text-dark">Your Cart is Currently Empty</h3>
+        <p class="text-muted max-w-500 mx-auto mb-4">
+            Looks like you haven't added any of our delicious café treats or meals yet.
+        </p>
+        <a href="{{ url_for('menu') }}" class="btn btn-cafe-primary btn-lg">
+            <i class="bi bi-arrow-left me-2"></i> Browse Delicious Menu
+        </a>
+    </div>
+    {% else %}
+    <div class="row g-4">
+        <!-- Cart Items Table -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 cart-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Item</th>
+                                <th>Unit Price</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                             class="rounded-3 shadow-sm" style="width: 58px; height: 58px; object-fit: cover;"
+                                             onerror="this.src='/static/images/default_food.svg'">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">{{ item.name }}</h6>
+                                            <span class="small text-muted">{{ item.category_name }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(item.price) }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="qty-control shadow-sm">
+                                        <form action="{{ url_for('update_cart_quantity', item_id=item.id, action='decrease') }}" method="POST" class="d-inline">
+                                            <button type="submit" class="qty-btn" title="Decrease Quantity"><i class="bi bi-dash"></i></button>
+                                        </form>
+                                        <span class="qty-val">{{ item.quantity }}</span>
+                                        <form action="{{ url_for('update_cart_quantity', item_id=item.id, action='increase') }}" method="POST" class="d-inline">
+                                            <button type="submit" class="qty-btn" title="Increase Quantity"><i class="bi bi-plus"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td class="text-end fw-bold text-dark">
+                                    {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(item.total_price) }}
+                                </td>
+                                <td class="text-center pe-4">
+                                    <form action="{{ url_for('remove_from_cart', item_id=item.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Remove Item">
+                                            <i class="bi bi-x-circle-fill fs-5"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <a href="{{ url_for('menu') }}" class="btn btn-outline-dark rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Add More Items
+                </a>
+            </div>
+        </div>
+
+        <!-- Bill Summary Card -->
+        <div class="col-lg-4">
+            <div class="bill-card sticky-top" style="top: 90px;">
+                <h4 class="fw-bold mb-3 text-dark border-bottom pb-2">Order Bill Summary</h4>
+                
+                <div class="bill-row">
+                    <span>Item Subtotal ({{ session.get('cart_count', 0) }} items)</span>
+                    <span class="fw-bold">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                
+                <div class="bill-row">
+                    <span>Applicable Tax ({{ config.TAX_RATE_PERCENTAGE }}% GST)</span>
+                    <span>{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(tax_amount) }}</span>
+                </div>
+
+                <div class="bill-row">
+                    <span>Standard Delivery</span>
+                    <span>
+                        {% if delivery_fee == 0 %}
+                            <span class="badge bg-success">FREE</span>
+                        {% else %}
+                            {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(delivery_fee) }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if subtotal < config.FREE_DELIVERY_THRESHOLD %}
+                <div class="alert alert-warning py-2 px-3 small mt-2 mb-0">
+                    <i class="bi bi-info-circle me-1"></i> Add items worth <strong>{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(config.FREE_DELIVERY_THRESHOLD - subtotal) }}</strong> more for FREE delivery!
+                </div>
+                {% endif %}
+
+                <div class="bill-total-row">
+                    <span>Final Amount:</span>
+                    <span class="text-danger">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(grand_total) }}</span>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('checkout') }}" class="btn btn-cafe-primary btn-lg w-100 justify-content-center shadow">
+                        Proceed to Checkout <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+
+                <div class="text-center mt-3 text-muted small">
+                    <i class="bi bi-shield-lock-fill text-success me-1"></i> 100% Safe & Secure Checkout
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

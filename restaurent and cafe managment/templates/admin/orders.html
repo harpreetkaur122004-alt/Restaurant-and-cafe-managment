@@ -1,0 +1,114 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Manage Orders{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div>
+        <h1 class="h2 fw-bold text-dark">Customer Orders & Fulfillment</h1>
+        <p class="text-muted mb-0">Track live orders, update kitchen preparation status, and inspect invoices.</p>
+    </div>
+</div>
+
+<!-- Status Filter Pills -->
+<div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="{{ url_for('admin_orders') }}" class="btn btn-sm {% if not current_status %}btn-dark{% else %}btn-outline-dark{% endif %} rounded-pill">
+        All Orders
+    </a>
+    {% for st in ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Completed', 'Cancelled'] %}
+    <a href="{{ url_for('admin_orders', status=st) }}" class="btn btn-sm {% if current_status == st %}btn-dark{% else %}btn-outline-dark{% endif %} rounded-pill">
+        {{ st }}
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Orders Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Order Number</th>
+                    <th>Customer Details</th>
+                    <th>Ordered Items</th>
+                    <th>Type & Address</th>
+                    <th>Payment</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="text-end pe-3">Bill</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if orders %}
+                    {% for ord in orders %}
+                    <tr>
+                        <td class="ps-3">
+                            <span class="fw-bold text-danger">{{ ord.order_number }}</span>
+                            <div class="small text-muted">{{ ord.created_at }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ ord.customer_name }}</div>
+                            <div class="small text-muted">{{ ord.customer_phone }}</div>
+                            <div class="small text-muted">{{ ord.customer_email }}</div>
+                        </td>
+                        <td>
+                            <ul class="list-unstyled small mb-0">
+                                {% for it in ord.order_items %}
+                                <li>
+                                    <span class="badge bg-secondary rounded-pill me-1">{{ it.quantity }}x</span>
+                                    <span>{{ it.item_name }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% if ord.special_notes %}
+                            <div class="small text-danger mt-1"><em>Note: {{ ord.special_notes }}</em></div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border text-capitalize mb-1">{{ ord.order_type.replace('_', ' ') }}</span>
+                            {% if ord.table_number %}
+                            <div class="small fw-semibold text-primary">Table: {{ ord.table_number }}</div>
+                            {% endif %}
+                            {% if ord.delivery_address %}
+                            <div class="small text-muted text-truncate" style="max-width: 200px;" title="{{ ord.delivery_address }}">{{ ord.delivery_address }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="small fw-semibold text-capitalize">{{ ord.payment_method.replace('_', ' ') }}</div>
+                            <span class="badge bg-info text-dark text-capitalize">{{ ord.payment_status }}</span>
+                        </td>
+                        <td class="fw-bold text-dark">
+                            {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(ord.total_amount) }}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('update_order_status', order_id=ord.id) }}" method="POST">
+                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="Pending" {% if ord.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Confirmed" {% if ord.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                    <option value="Preparing" {% if ord.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                                    <option value="Ready" {% if ord.status == 'Ready' %}selected{% endif %}>Ready</option>
+                                    <option value="Completed" {% if ord.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    <option value="Cancelled" {% if ord.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a href="{{ url_for('view_invoice', order_id=ord.id) }}" class="btn btn-sm btn-outline-dark rounded-pill" title="Print Invoice">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No orders found matching the filter.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

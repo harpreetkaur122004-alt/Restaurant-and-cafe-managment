@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-dark text-white p-4 text-center" style="background: linear-gradient(135deg, #271406, #4e342e) !important;">
+                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo" style="width: 50px; height: 50px; background: #fff; border-radius: 50%; padding: 2px;" class="mb-2">
+                    <h4 class="fw-bold mb-0">Welcome Back</h4>
+                    <p class="small text-light mb-0">Sign in to your account</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form action="{{ url_for('login') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" class="form-control" required placeholder="name@example.com" autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label fw-semibold">Password</label>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                <input type="password" name="password" class="form-control" required placeholder="Enter your password">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-cafe-primary btn-lg w-100 justify-content-center mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3 pt-3 border-top">
+                        <span class="text-muted small">Don't have an account yet?</span>
+                        <a href="{{ url_for('register') }}" class="fw-bold ms-1 text-danger">Register Here</a>
+                    </div>
+                </div>
+
+                <!-- Evaluator Demo Credentials Helper Box -->
+                <div class="card-footer bg-light p-3 border-top">
+                    <span class="fw-bold text-dark small d-block mb-1">
+                        <i class="bi bi-info-circle-fill text-primary me-1"></i> Quick Test Credentials for Evaluator / Viva:
+                    </span>
+                    <div class="small text-muted">
+                        <div><strong>Admin:</strong> admin@restaurant.com &bull; Pass: <code>admin123</code></div>
+                        <div><strong>Customer:</strong> customer@gmail.com &bull; Pass: <code>customer123</code></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

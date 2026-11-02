@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoice #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Action buttons (Hidden during printing) -->
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print max-w-820 mx-auto">
+        <a href="{{ url_for('my_orders') }}" class="btn btn-outline-dark rounded-pill">
+            <i class="bi bi-arrow-left me-1"></i> Back to Orders
+        </a>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-cafe-primary shadow-sm">
+                <i class="bi bi-printer-fill me-2"></i> Print Official Bill
+            </button>
+        </div>
+    </div>
+
+    <!-- Official Printable Invoice Box -->
+    <div class="invoice-container">
+        <!-- Invoice Header -->
+        <div class="invoice-header d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo" style="width: 58px; height: 58px;">
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">{{ config.RESTAURANT_NAME }}</h3>
+                    <p class="small text-muted mb-0">{{ config.RESTAURANT_TAGLINE }}</p>
+                    <p class="small text-muted mb-0">{{ config.RESTAURANT_ADDRESS }}</p>
+                    <p class="small text-muted mb-0">Phone: {{ config.RESTAURANT_PHONE }} | Email: {{ config.RESTAURANT_EMAIL }}</p>
+                    <span class="badge bg-light text-dark border mt-1">GSTIN: 07AAAAA0000A1Z5 (Sample GSTIN)</span>
+                </div>
+            </div>
+            <div class="text-end">
+                <h4 class="fw-bold text-danger mb-1">TAX INVOICE</h4>
+                <p class="mb-0 fw-bold">Invoice #: <span class="text-dark">{{ order.order_number }}</span></p>
+                <p class="mb-0 small text-muted">Date: {{ order.created_at }}</p>
+                <p class="mb-0 small text-muted">Status: <span class="badge bg-success">{{ order.status }}</span></p>
+            </div>
+        </div>
+
+        <!-- Customer & Order Meta Information -->
+        <div class="row g-3 my-3 p-3 bg-light rounded-3">
+            <div class="col-sm-6">
+                <span class="text-uppercase fw-bold text-muted small d-block">Billed To:</span>
+                <h6 class="fw-bold mb-0">{{ order.customer_name }}</h6>
+                <div class="small text-muted">Phone: {{ order.customer_phone }}</div>
+                <div class="small text-muted">Email: {{ order.customer_email }}</div>
+                {% if order.delivery_address %}
+                <div class="small text-muted">Delivery Address: {{ order.delivery_address }}</div>
+                {% endif %}
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <span class="text-uppercase fw-bold text-muted small d-block">Order Details:</span>
+                <div class="small"><strong>Order Type:</strong> <span class="text-capitalize">{{ order.order_type.replace('_', ' ') }}</span></div>
+                {% if order.table_number %}
+                <div class="small"><strong>Table:</strong> {{ order.table_number }}</div>
+                {% endif %}
+                <div class="small"><strong>Payment Method:</strong> <span class="text-capitalize">{{ order.payment_method.replace('_', ' ') }}</span></div>
+                <div class="small"><strong>Payment Status:</strong> <span class="badge bg-info text-dark text-capitalize">{{ order.payment_status }}</span></div>
+            </div>
+        </div>
+
+        <!-- Itemized Table -->
+        <div class="table-responsive my-4">
+            <table class="table table-bordered invoice-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;" class="text-center">#</th>
+                        <th>Item Description</th>
+                        <th class="text-center" style="width: 100px;">Unit Price</th>
+                        <th class="text-center" style="width: 80px;">Qty</th>
+                        <th class="text-end" style="width: 120px;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="text-center text-muted">{{ loop.index }}</td>
+                        <td>
+                            <strong class="text-dark">{{ item.item_name }}</strong>
+                        </td>
+                        <td class="text-center">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(item.unit_price) }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end fw-semibold">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(item.subtotal) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Financial Breakdown & Totals -->
+        <div class="row justify-content-end">
+            <div class="col-sm-6">
+                <div class="d-flex justify-content-between py-1 small border-bottom">
+                    <span class="text-muted">Item Subtotal:</span>
+                    <strong>{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(order.subtotal) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 small border-bottom">
+                    <span class="text-muted">Applicable Tax ({{ config.TAX_RATE_PERCENTAGE }}% GST):</span>
+                    <strong>{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(order.tax_amount) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 small border-bottom">
+                    <span class="text-muted">Delivery Charges:</span>
+                    <strong>
+                        {% if order.delivery_fee == 0 %}
+                            <span class="text-success">FREE</span>
+                        {% else %}
+                            {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(order.delivery_fee) }}
+                        {% endif %}
+                    </strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 fs-5 fw-bold text-dark border-bottom border-2 border-dark">
+                    <span>Grand Total:</span>
+                    <span class="text-danger">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(order.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Footer & Barcode Mockup -->
+        <div class="mt-5 pt-4 border-top text-center">
+            <p class="fw-bold mb-1">Thank you for dining with {{ config.RESTAURANT_NAME }}!</p>
+            <p class="small text-muted mb-3">This is a computer-generated tax invoice and requires no physical signature. Questions? Call us at {{ config.RESTAURANT_PHONE }}.</p>
+            <div class="d-inline-block p-2 bg-light border rounded">
+                <span class="font-monospace small tracking-widest text-muted">||||| | ||||| || |||||| | |||| ||| |||||||</span>
+                <div class="small font-monospace text-muted">{{ order.order_number }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

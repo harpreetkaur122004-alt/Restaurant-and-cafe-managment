@@ -1,0 +1,132 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Sales Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div>
+        <h1 class="h2 fw-bold text-dark">Financial & Sales Analytics</h1>
+        <p class="text-muted mb-0">Track revenue performance, top-selling culinary items, and category revenue distribution.</p>
+    </div>
+    <button onclick="window.print()" class="btn btn-outline-dark btn-sm">
+        <i class="bi bi-printer me-1"></i> Print Sales Summary
+    </button>
+</div>
+
+<!-- Sales Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <span class="text-muted small fw-bold text-uppercase">Gross Revenue</span>
+            <h3 class="fw-bold text-success mb-0">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(sales_summary.gross_sales or 0) }}</h3>
+            <span class="small text-muted">All completed orders</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <span class="text-muted small fw-bold text-uppercase">Total Orders</span>
+            <h3 class="fw-bold text-dark mb-0">{{ sales_summary.total_orders or 0 }}</h3>
+            <span class="small text-muted">Orders processed</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <span class="text-muted small fw-bold text-uppercase">Average Order Value</span>
+            <h3 class="fw-bold text-primary mb-0">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(sales_summary.avg_order_value or 0) }}</h3>
+            <span class="small text-muted">Per customer transaction</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <span class="text-muted small fw-bold text-uppercase">Tax Collected</span>
+            <h3 class="fw-bold text-warning-emphasis mb-0">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(sales_summary.total_tax or 0) }}</h3>
+            <span class="small text-muted">5% GST remittance</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Top Selling Dishes -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                <i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 Bestselling Dishes
+            </h5>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Dish Name</th>
+                            <th class="text-center">Units Sold</th>
+                            <th class="text-end">Revenue Generated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if top_items %}
+                            {% for it in top_items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ it.item_name }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary rounded-pill px-3">{{ it.total_qty }}</span>
+                                </td>
+                                <td class="text-end fw-bold text-dark">
+                                    {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(it.total_sales) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted">No sales items recorded yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Sales Breakdown -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                <i class="bi bi-pie-chart-fill text-danger me-2"></i>Category Revenue Contribution
+            </h5>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-center">Items Sold</th>
+                            <th class="text-end">Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if category_sales %}
+                            {% for cat in category_sales %}
+                            <tr>
+                                <td>
+                                    <strong>{{ cat.category_name }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">{{ cat.items_sold }}</span>
+                                </td>
+                                <td class="text-end fw-bold text-dark">
+                                    {{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(cat.category_revenue) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted">No category sales recorded yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-dark text-white p-4 text-center" style="background: linear-gradient(135deg, #271406, #4e342e) !important;">
+                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo" style="width: 50px; height: 50px; background: #fff; border-radius: 50%; padding: 2px;" class="mb-2">
+                    <h4 class="fw-bold mb-0">Join Our Café Family</h4>
+                    <p class="small text-light mb-0">Create your account to order gourmet food & book tables</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form action="{{ url_for('register') }}" method="POST" id="registrationForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" name="full_name" class="form-control" required placeholder="e.g. Rahul Sharma" autofocus>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" name="email" class="form-control" required placeholder="name@example.com">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                                    <input type="tel" name="phone" id="regPhone" class="form-control" required placeholder="+91 9876543210">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Delivery Address (Optional)</label>
+                            <textarea name="address" class="form-control" rows="2" placeholder="Your residential address for food deliveries"></textarea>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Create Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                    <input type="password" name="password" id="regPassword" class="form-control" required placeholder="Min 6 characters">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" name="confirm_password" id="regConfirmPassword" class="form-control" required placeholder="Re-enter password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-cafe-primary btn-lg w-100 justify-content-center mb-3">
+                            <i class="bi bi-person-check-fill me-2"></i> Register Account
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3 pt-3 border-top">
+                        <span class="text-muted small">Already have an account?</span>
+                        <a href="{{ url_for('login') }}" class="fw-bold ms-1 text-danger">Sign In Here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

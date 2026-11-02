@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Table Reservation{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="text-uppercase fw-bold text-danger small">Dine with Us</span>
+        <h1 class="display-5 fw-bold">Reserve Your Table</h1>
+        <p class="text-muted max-w-600 mx-auto">
+            Book an intimate candlelight corner, a lively garden patio, or a spacious family booth with guaranteed conflict-free booking.
+        </p>
+    </div>
+
+    <div class="row g-5">
+        <!-- Reservation Form -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h4 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                    <i class="bi bi-calendar2-heart text-danger me-2"></i>Reservation Request Form
+                </h4>
+
+                <form action="{{ url_for('book_table') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Your Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="customer_name" class="form-control" required
+                                   value="{{ user.full_name if user else session.get('user_name', '') }}" placeholder="e.g. Rahul Sharma">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" name="customer_phone" class="form-control" required
+                                   value="{{ user.phone if user else '' }}" placeholder="e.g. +91 9876543210">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" name="customer_email" class="form-control" required
+                                   value="{{ user.email if user else session.get('user_email', '') }}" placeholder="e.g. rahul@gmail.com">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
+                            <input type="date" name="reservation_date" id="reservation_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Time Slot <span class="text-danger">*</span></label>
+                            <select name="reservation_time" class="form-select" required>
+                                <option value="" disabled selected>Select slot</option>
+                                <option value="09:00">09:00 AM (Breakfast)</option>
+                                <option value="11:30">11:30 AM (Brunch)</option>
+                                <option value="13:00">01:00 PM (Lunch)</option>
+                                <option value="14:30">02:30 PM (Lunch)</option>
+                                <option value="17:00">05:00 PM (High Tea)</option>
+                                <option value="19:00">07:00 PM (Dinner)</option>
+                                <option value="19:30">07:30 PM (Dinner)</option>
+                                <option value="20:30">08:30 PM (Dinner)</option>
+                                <option value="21:30">09:30 PM (Late Dinner)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Guests Count <span class="text-danger">*</span></label>
+                            <select name="guest_count" class="form-select" required>
+                                <option value="1">1 Person (Solo)</option>
+                                <option value="2" selected>2 Persons (Couple)</option>
+                                <option value="4">4 Persons (Small Group)</option>
+                                <option value="6">6 Persons (Family)</option>
+                                <option value="8">8 Persons (Celebration)</option>
+                                <option value="10">10+ Persons (Banquet)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Select Table Area / Specific Table <span class="text-danger">*</span></label>
+                            <select name="table_id" class="form-select" required>
+                                <option value="" disabled selected>Choose a table from our dining zones...</option>
+                                {% for tbl in tables %}
+                                <option value="{{ tbl.id }}">
+                                    Table {{ tbl.table_number }} (Seats {{ tbl.capacity }} people) &bull; {{ tbl.location }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <span class="small text-muted mt-1 d-block">
+                                <i class="bi bi-shield-check text-success"></i> Overlap conflict validation is automatically performed upon submission.
+                            </span>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Special Request or Occasion (Optional)</label>
+                            <textarea name="special_request" class="form-control" rows="3" placeholder="e.g. Birthday celebration, anniversary cake arrangement, quiet window seat, high chair for toddler..."></textarea>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-cafe-primary btn-lg w-100 justify-content-center shadow">
+                                <i class="bi bi-calendar-check-fill me-2"></i> Submit Table Reservation
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right: Restaurant Table Layout & User's Active Bookings -->
+        <div class="col-lg-5">
+            <!-- Table Layout Guide -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                    <i class="bi bi-grid-3x3-gap-fill text-danger me-2"></i>Dining Hall Zones
+                </h5>
+                <div class="row g-2">
+                    {% for tbl in tables %}
+                    <div class="col-6">
+                        <div class="p-3 border rounded-3 bg-light text-center h-100">
+                            <div class="badge bg-dark mb-1">Table {{ tbl.table_number }}</div>
+                            <div class="fw-bold text-primary">{{ tbl.capacity }} Seats</div>
+                            <div class="small text-muted text-truncate">{{ tbl.location }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Existing Bookings (if customer is logged in) -->
+            {% if user_reservations %}
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                    <i class="bi bi-bookmark-check-fill text-success me-2"></i>Your Reservations
+                </h5>
+                <div class="list-group list-group-flush">
+                    {% for res in user_reservations %}
+                    <div class="list-group-item px-0 py-3 bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark">Table {{ res.table_number }} ({{ res.location }})</strong>
+                            <span class="status-pill status-{{ res.status|capitalize }}">{{ res.status|capitalize }}</span>
+                        </div>
+                        <div class="small text-muted">
+                            <i class="bi bi-calendar-date me-1"></i> {{ res.reservation_date }} at {{ res.reservation_time }}
+                            &bull; <i class="bi bi-people me-1"></i> {{ res.guest_count }} Guests
+                        </div>
+                        {% if res.special_request %}
+                        <div class="small text-secondary fst-italic mt-1">Note: {{ res.special_request }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmed | {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="max-w-700 mx-auto text-center bg-white p-5 rounded-4 shadow-sm border">
+        <div class="rounded-circle bg-success bg-opacity-25 text-success d-inline-flex align-items-center justify-content-center p-4 mb-3" style="width: 90px; height: 90px;">
+            <i class="bi bi-check-lg" style="font-size: 3rem;"></i>
+        </div>
+        <h1 class="display-6 fw-bold text-dark">Order Successfully Placed!</h1>
+        <p class="text-muted">
+            Thank you, <strong>{{ order.customer_name }}</strong>! Your culinary feast is being prepared by our chefs.
+        </p>
+
+        <div class="badge bg-warning text-dark fs-6 px-4 py-2 rounded-pill mb-4 shadow-sm">
+            Order Reference: <strong>{{ order.order_number }}</strong>
+        </div>
+
+        <div class="card bg-light border-0 rounded-3 p-4 text-start mb-4">
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Order Status</span>
+                    <span class="status-pill status-{{ order.status }}">{{ order.status }}</span>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Order Type</span>
+                    <strong class="text-capitalize">{{ order.order_type.replace('_', ' ') }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Payment Mode</span>
+                    <strong class="text-capitalize">{{ order.payment_method.replace('_', ' ') }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Total Paid / Payable</span>
+                    <strong class="text-danger fs-5">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(order.total_amount) }}</strong>
+                </div>
+                {% if order.delivery_address %}
+                <div class="col-12 border-top pt-2 mt-2">
+                    <span class="text-muted small d-block">Delivery Destination</span>
+                    <span>{{ order.delivery_address }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ordered Items Quick List -->
+        <div class="text-start mb-4">
+            <h6 class="fw-bold text-dark border-bottom pb-2">Items Ordered ({{ items|length }})</h6>
+            <ul class="list-group list-group-flush small">
+                {% for it in items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                    <span><strong>{{ it.quantity }}x</strong> {{ it.item_name }}</span>
+                    <span class="fw-bold">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(it.subtotal) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{{ url_for('view_invoice', order_id=order.id) }}" class="btn btn-cafe-primary px-4">
+                <i class="bi bi-printer me-2"></i> View & Print Invoice
+            </a>
+            <a href="{{ url_for('my_orders') }}" class="btn btn-outline-dark rounded-pill px-4">
+                <i class="bi bi-receipt me-2"></i> Go to My Orders
+            </a>
+            <a href="{{ url_for('menu') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                Order More Items
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

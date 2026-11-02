@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="text-uppercase fw-bold text-danger small">Order History</span>
+            <h1 class="display-6 fw-bold mb-0">My Culinary Orders</h1>
+        </div>
+        <a href="{{ url_for('menu') }}" class="btn btn-cafe-primary rounded-pill">
+            <i class="bi bi-plus-circle me-1"></i> New Order
+        </a>
+    </div>
+
+    {% if not orders %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border p-5">
+        <div class="rounded-circle bg-light d-inline-flex p-4 mb-3">
+            <i class="bi bi-clock-history text-muted" style="font-size: 3.5rem;"></i>
+        </div>
+        <h3 class="fw-bold text-dark">No Previous Orders Found</h3>
+        <p class="text-muted max-w-500 mx-auto mb-4">
+            You haven't placed any food orders yet. Explore our delicious menu and treat yourself today!
+        </p>
+        <a href="{{ url_for('menu') }}" class="btn btn-cafe-primary btn-lg">
+            <i class="bi bi-cup-hot me-2"></i> Browse Our Menu
+        </a>
+    </div>
+    {% else %}
+    <div class="row g-4">
+        {% for ord in orders %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <!-- Card Header -->
+                <div class="card-header bg-light py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="fw-bold text-dark me-3">Order: <span class="text-danger">{{ ord.order_number }}</span></span>
+                        <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i> {{ ord.created_at }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="status-pill status-{{ ord.status }}">{{ ord.status }}</span>
+                        <a href="{{ url_for('view_invoice', order_id=ord.id) }}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+                            <i class="bi bi-printer me-1"></i> Bill / Invoice
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <h6 class="fw-bold text-muted small text-uppercase mb-2">Items Ordered:</h6>
+                            <ul class="list-unstyled mb-0">
+                                {% for it in ord.order_items %}
+                                <li class="d-flex justify-content-between align-items-center py-1 border-bottom-dashed small">
+                                    <span>
+                                        <span class="badge bg-secondary rounded-pill me-2">{{ it.quantity }}x</span>
+                                        <strong class="text-dark">{{ it.item_name }}</strong>
+                                    </span>
+                                    <span class="fw-semibold text-dark">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(it.subtotal) }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="col-md-5 border-start-md ps-md-4">
+                            <h6 class="fw-bold text-muted small text-uppercase mb-2">Delivery & Payment:</h6>
+                            <div class="small mb-1">
+                                <strong>Type:</strong> <span class="text-capitalize">{{ ord.order_type.replace('_', ' ') }}</span>
+                                {% if ord.table_number %}({{ ord.table_number }}){% endif %}
+                            </div>
+                            <div class="small mb-1">
+                                <strong>Payment:</strong> <span class="text-capitalize">{{ ord.payment_method.replace('_', ' ') }}</span>
+                                (<span class="text-success">{{ ord.payment_status }}</span>)
+                            </div>
+                            {% if ord.delivery_address %}
+                            <div class="small text-muted mb-2">
+                                <strong>Address:</strong> {{ ord.delivery_address }}
+                            </div>
+                            {% endif %}
+                            <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark">Grand Total:</span>
+                                <span class="fs-5 fw-bold text-danger">{{ config.CURRENCY_SYMBOL }}{{ "%.2f"|format(ord.total_amount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
